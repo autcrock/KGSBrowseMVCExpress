@@ -1,0 +1,19 @@
+﻿<div id="body">
+    <section class="featured">
+        <div class="content-wrapper">
+            <hgroup class="title">
+                <h1>KGSBrowse LAS file loader</h1>
+                <h2>Loads Log ASCII Standard v 1.2 and 2 files.</h2>
+            </hgroup>
+            <p>
+                Press the button to select a file and load it.
+            </p>
+            @using (Html.BeginForm("Uploadfiles", "Home", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <label for="file">Filename:</label>
+                <input type="file" name="file" id="file" />
+                <input type="submit" name="submit" value="Submit" />
+            }
+        </div>
+    </section>
+</div>
