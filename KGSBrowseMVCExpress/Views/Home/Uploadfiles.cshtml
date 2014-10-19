@@ -4,53 +4,23 @@
     <section class="featured">
         <div class="content-wrapper">
             <hgroup class="title">
-                <h1>KGSBrowse LAS file displays using C3.</h1>
+                <h1>KGSBrowse LAS file well log data plotter.</h1>
             </hgroup>
-            <h2>Displays well logs.</h2>
 
             <link href=@Url.Content("~/c3.css") rel="stylesheet" type="text/css">
-            <script src=@Url.Content("~/d3.min.js") charset="utf-8" type="text/javascript"></script>
+            <script src=@Url.Content("~/d3.js") charset="utf-8" type="text/javascript"></script>
             <script src=@Url.Content("~/c3.min.js") charset="utf-8" type="text/javascript"></script>
 
-            @*<div id="chart1"></div>
-                <script charset="utf-8" type="text/javascript">
-                    var chart = c3.generate({
-                        bindto: '#chart1',
-                        data: {
-                            columns: [
-                            ['data1', 30, 200, 100, 400, 150, 250],
-                            ['data2', 50, 20, 10, 40, 15, 25]
-                            ]
-                        }
-                    });
-                 </script>*@
+            A LAS file is sent to the server by the client browser, parsed and returned as JSON data and plotted by D3JS on the browser.
 
-
-
-            <h1>JSON data from server plotted by C3JS (D3JS wrapper).</h1>
-
-
-            <h1>JSON data from server.</h1>
-
-            @* Chart holder for C3JS display *@
-            <div id="chart"></div>
             <script>
                 var jsonInput = @Html.Raw(Model.ReturnedValue);
 
-                function getWellMnemonics (jsonWell) { Object.keys(jsonWell) };
-                Object.size = function(obj) {
-                    var size = 0, key;
-                    for (key in obj) {
-                        if (obj.hasOwnProperty(key)) size++;
-                    }
-                    return size;
-                };
-                var numberOfMnemonics = Object.size(jsonInput);
+                var mnemonics = Object.keys(jsonInput);
+                var numberOfMnemonics = mnemonics.length;
 
-                var mnemonics = getWellMnemonics(jsonInput);
-                for ( var item in mnemonics ) {console.trace(item)}
-
-                var strokeWidth = 2;
+                var boxStrokeWidth = 2;
+                var pathStrokeWidth = 1;
                 var logLegendHeight = 50;
                 var logLegendWidth = 200;
                 var logWidth = logLegendWidth;
@@ -61,6 +31,13 @@
                 var wellWidth = numberOfMnemonics * logWidth;
                 var wellHeight = logLegendHeight + logHeight;
 
+
+                // Set up the depth axis log data once as it will be used for each other log in the well
+                var depthData = jsonInput[mnemonics[0]];
+                var y = d3.scale.linear().range([0, logHeight]);
+                y.domain(d3.extent(depthData));
+                var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
+                
                 var wellBoxData = [ {"x": 0,"y": 0},
                     {"x": wellWidth,"y": 0},
                     {"x": wellWidth,"y": wellHeight},
@@ -80,69 +57,57 @@
                     {"x": 0,"y": 0}];
 
                 var box = d3.svg.line()
-                    .x(function(d) { return d.x; })
+                    .x(function(d) { return d.x })
                     .y(function(d) { return d.y; })
                     .interpolate("linear");
 
-                var holder = d3.select("body").append("svg").attr("width", wellWidth).attr("height", wellHeight);
+                var svg = d3.select("body").append("svg").attr("width", wellWidth).attr("height", wellHeight);
 
-                for (var i =0; i< numberOfMnemonics; i++) {
+                for (var i = 0; i< numberOfMnemonics; i++) {
                     var translationDistance = logLegendWidth * i;
                     var translationDistanceString = ("translate(" + translationDistance.toString() + ",0)")
-                    holder.append("path")
+                    svg.append("path")
                         .attr("d", box(logLegendBoxData))
                         .attr("stroke", "black")
-                        .attr("stroke-width", strokeWidth)
+                        .attr("stroke-width", boxStrokeWidth)
                         .attr("fill", "none")
                         .attr("transform", translationDistanceString);
-                    holder.append("path")
+                    svg.append("path")
                         .attr("d", box(logBoxData))
                         .attr("stroke", "black")
-                        .attr("stroke-width", strokeWidth)
+                        .attr("stroke-width", boxStrokeWidth)
                         .attr("fill", "none")
                         .attr("transform", translationDistanceString);
+
+                    var logData = jsonInput[mnemonics[i]];
+                    var x = d3.scale.linear().range([0, logWidth]);
+                    x.domain(d3.extent(logData));
+                    var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5);
+
+                    var valueLine = d3.svg.line()
+                        .x(function (d) { return x(d) })
+                        .y(function (d) { return y(d) });
+
+                    svg.append("path")
+                        .attr("d", valueLine(depthData, logData))
+                        .attr("stroke", "black")
+                        .attr("stroke-width", pathStrokeWidth)
+                        .attr("transform", translationDistanceString);
+                    svg.append("path")
+                        .attr("class", "y axis")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", pathStrokeWidth)
+                        .attr("transform", translationDistanceString)
+                        .call(yAxis);
                 }
-                holder.append("path")
+                svg.append("path")
                     .attr("d", box(wellBoxData))
                     .attr("stroke", "black")
-                    .attr("stroke-width", strokeWidth)
+                    .attr("stroke-width", boxStrokeWidth*2)
                     .attr("fill", "none");
-
-                //var chart = c3.generate({
-                //    bindto: '#chart',
-                //    size: {
-                //        height: 640,
-                //        width: 300
-                //    },
-                //    data: {
-                //        x: 'DEPT',
-                //        json: jsonInput
-                //    },
-                //    axis: { 'rotated': true },
-                //    point: { 'show': false }
-                //});
-                //var i = 0;
-                //for (var o in mnemonics) {
-                //    var translationDistance = logLegendWidth * i;
-                //    var translationDistanceString = ("translate(" + translationDistance.toString() + ",0)")
-                //    //                    var logGroupName = "g" + o.toString();
-                //    var logGroup = holder.append("g")
-                //        .attr(o.toString, translationDistanceString)
-                //    console.log(logGroupName);
-                //    holder.append("g")
-                //        .attr("d", box(logLegendBoxData))
-                //        .attr("stroke", "black")
-                //        .attr("stroke-width", strokeWidth)
-                //        .attr("fill", "none")
-                //        .attr("transform", translationDistanceString);
-                //    holder.append("g")
-                //        .attr("d", box(logBoxData))
-                //        .attr("stroke", "black")
-                //        .attr("stroke-width", strokeWidth)
-                //        .attr("fill", "none")
-                //       .attr("transform", translationDistanceString);
-                //    i++;
-                //}
+                svg.append("path")
+                    .attr("class", "x axis")
+                    .call(xAxis);
 
             </script>
         </div>
