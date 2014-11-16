@@ -29,7 +29,7 @@
                 var logBoxVerticalOffset = logLegendHeight;
                 var logBoxHorizontalOffset = logLegendWidth;
                 var wellOffsetY = 50;
-                var wellWidth = numberOfMnemonics * logWidth;
+                var wellWidth = (numberOfMnemonics - 1) * logWidth;
                 var wellHeight = logLegendHeight + logHeight;
 
                 var svg = d3.select("body").append("svg").attr("width", wellWidth).attr("height", wellHeight);
@@ -86,22 +86,29 @@
                     return JSON.parse(newLogData);
                 }
 
-                for (var i = 0; i< numberOfMnemonics; i++) {
+                for (var i = 1; i< numberOfMnemonics; i++) {
                     var loopself = this;
-                    var translationDistance = logLegendWidth * i;
-                    var translationDistanceString = ("translate(" + translationDistance.toString() + ",0)")
+                    var translationX = logLegendWidth * (i-1);
+                    var legendTranslationDistanceString = ("translate(" 
+                        + translationX.toString() 
+                        + ", 0)");
+                    var logTranslationDistanceString = ("translate(" 
+                        + translationX.toString() 
+                        + "," 
+                        + logLegendHeight.toString()
+                        + ")");
                     svg.append("path")
                         .attr("d", box(logLegendBoxData))
-                        .attr("stroke", "black")
-                        .attr("stroke-width", boxStrokeWidth)
+                        .attr("stroke", "orange")
+                        .attr("stroke-width", pathStrokeWidth)
                         .attr("fill", "none")
-                        .attr("transform", translationDistanceString);
+                        .attr("transform", legendTranslationDistanceString);
                     svg.append("path")
                         .attr("d", box(logBoxData))
-                        .attr("stroke", "black")
-                        .attr("stroke-width", boxStrokeWidth)
+                        .attr("stroke", "pink")
+                        .attr("stroke-width", pathStrokeWidth)
                         .attr("fill", "none")
-                        .attr("transform", translationDistanceString);
+                        .attr("transform", logTranslationDistanceString);
 
                     var inputLogData = jsonInput[mnemonics[i]];
                     var x = d3.scale.linear().range([0, logWidth]).domain(d3.extent(inputLogData));
@@ -110,25 +117,28 @@
 
                     svg.append("path")
                         .attr("d", valueLine(logData)) // This is incorrect
-                        .attr("stroke", "black")
+                        .attr("stroke", "steelblue")
                         .attr("stroke-width", pathStrokeWidth)
-                        .attr("transform", translationDistanceString);
+                        .attr("transform", logTranslationDistanceString)
+                        .attr("fill", "none");
                     svg.append("path")
                         .attr("class", "y axis")
-                        .attr("stroke", "black")
+                        .attr("stroke", "green")
                         .attr("stroke-width", pathStrokeWidth)
-                        .attr("transform", translationDistanceString)
+                        .attr("transform", logTranslationDistanceString)
                         .call(yAxis);
                 }
                 svg.append("path")
                     .attr("d", box(wellBoxData))
-                    .attr("stroke", "black")
+                    .attr("stroke", "red")
                     .attr("stroke-width", boxStrokeWidth*2)
                     .attr("fill", "none");
                 svg.append("path")
                     .attr("class", "x axis")
+                    .attr("stroke", "yellow")
+                    .attr("stroke-width", pathStrokeWidth)
+                    .attr("transform", logTranslationDistanceString)
                     .call(xAxis);
-
             </script>
         </div>
     </section>
