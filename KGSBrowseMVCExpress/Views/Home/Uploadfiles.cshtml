@@ -14,8 +14,9 @@
             A LAS file is sent to the server by the client browser, parsed and returned as JSON data and plotted by D3JS on the browser.
 
             <script>
-                var jsonInput = @Html.Raw(Model.ReturnedValue);
+                var self = this;
 
+                var jsonInput = @Html.Raw(Model.ReturnedValue);
                 var mnemonics = Object.keys(jsonInput);
                 var numberOfMnemonics = mnemonics.length;
 
@@ -31,11 +32,11 @@
                 var wellWidth = numberOfMnemonics * logWidth;
                 var wellHeight = logLegendHeight + logHeight;
 
+                var svg = d3.select("body").append("svg").attr("width", wellWidth).attr("height", wellHeight);
 
                 // Set up the depth axis log data once as it will be used for each other log in the well
                 var depthData = jsonInput[mnemonics[0]];
-                var y = d3.scale.linear().range([0, logHeight]);
-                y.domain(d3.extent(depthData));
+                var y = d3.scale.linear().range([0, logHeight]).domain(d3.extent(depthData));
                 var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
                 
                 var wellBoxData = [ {"x": 0,"y": 0},
@@ -61,9 +62,32 @@
                     .y(function(d) { return d.y; })
                     .interpolate("linear");
 
-                var svg = d3.select("body").append("svg").attr("width", wellWidth).attr("height", wellHeight);
+                var valueLine = d3.svg.line()
+                    .x(function (d) { return x(d.x) })
+                    .y(function (d) { return y(d.y) })
+                    .interpolate("linear");
+
+                var frameIndex = 0;
+
+                function getLogData(arrayID, arrayText) {
+
+                    var newLogData = '[ ';
+                    //should arrayID length equal arrayText length and both against null
+                    if (arrayID != null && arrayText != null && arrayID.length == arrayText.length) {
+                        for (var i = 0; i < arrayID.length; i++) {
+                            if ( i < arrayID.length - 1) {
+                                newLogData += '{ "x" : ' + arrayText[i] + ', "y" : ' + arrayID[i] + ' }, ';
+                            } else {
+                                newLogData += '{ "x" : ' + arrayText[i] + ', "y" : ' + arrayID[i] + ' } ';
+                            }
+                        }
+                    }
+                    newLogData += ']';
+                    return JSON.parse(newLogData);
+                }
 
                 for (var i = 0; i< numberOfMnemonics; i++) {
+                    var loopself = this;
                     var translationDistance = logLegendWidth * i;
                     var translationDistanceString = ("translate(" + translationDistance.toString() + ",0)")
                     svg.append("path")
@@ -79,17 +103,13 @@
                         .attr("fill", "none")
                         .attr("transform", translationDistanceString);
 
-                    var logData = jsonInput[mnemonics[i]];
-                    var x = d3.scale.linear().range([0, logWidth]);
-                    x.domain(d3.extent(logData));
+                    var inputLogData = jsonInput[mnemonics[i]];
+                    var x = d3.scale.linear().range([0, logWidth]).domain(d3.extent(inputLogData));
                     var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5);
-
-                    var valueLine = d3.svg.line()
-                        .x(function (d) { return x(d) })
-                        .y(function (d) { return y(d) });
+                    var logData = getLogData ( depthData, inputLogData );
 
                     svg.append("path")
-                        .attr("d", valueLine(depthData, logData))
+                        .attr("d", valueLine(logData)) // This is incorrect
                         .attr("stroke", "black")
                         .attr("stroke-width", pathStrokeWidth)
                         .attr("transform", translationDistanceString);
