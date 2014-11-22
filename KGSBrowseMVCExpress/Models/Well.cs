@@ -5,20 +5,6 @@ using System.Text.RegularExpressions;
 
 namespace KGSBrowseMVC.Models
 {
-    public class Model
-    {
-        public string ReturnedValue;
-
-        public Model()
-        {
-            ReturnedValue = "Empty Model";
-        }
-        public Model( string message)
-        {
-            ReturnedValue = message;
-        }
-    }
-
     // A well log internal representation holding metadata in the header member
     // and the log data in the data member.
     public class Well
