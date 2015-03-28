@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace Well.Models
+namespace Well.Models.Model
 {
     public class Model
     {

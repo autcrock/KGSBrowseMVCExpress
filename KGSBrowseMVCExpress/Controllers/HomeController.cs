@@ -2,7 +2,8 @@
 using System.IO;
 using System.Web;
 using System.Web.Mvc;
-using Well.Models;
+using Well.Models.WellDataModel;
+using Well.Models.Model;
 
 namespace Well.Controllers
 {
@@ -42,10 +43,19 @@ namespace Well.Controllers
                 // Error conditions are finished with, so load the LAS file, thin the data to JSON form suitable for D3JS and C3JS
                 var path = Path.Combine(Server.MapPath("~/"), fileName);
                 file.SaveAs(path);
-                var inputWell = (new LAS(path)).GetWell();
+
                 
-                // We believe everything is OK, so return the view for display
-                return View(new Model(inputWell.WellToJson(40, 12)));
+//                var inputWell = (new LAS(path)).GetWell();
+                using (var fs = System.IO.File.OpenRead(path.ToString()))
+                {
+                    using (var sr = new StreamReader(fs))
+                    {
+                        var inputWell = new Well.Models.WellDataModel.Well(sr);
+
+                        // We believe everything is OK, so return the view for display
+                        return View(new Model(inputWell.WellToJson(40, 12)));
+                    }
+                }
             }
 
             catch (Exception ex)

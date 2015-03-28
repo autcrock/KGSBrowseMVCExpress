@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace KGSBrowseMVC.Models
+namespace Well.Models.WellDataModel
 {
     // A well log internal representation holding metadata in the header member
     // and the log data in the data member.
