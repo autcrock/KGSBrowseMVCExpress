@@ -2,10 +2,9 @@
 using System.IO;
 using System.Web;
 using System.Web.Mvc;
-using KGSBrowseMVC.Models;
-//using Microsoft.Ajax.Utilities;
+using Well.Models;
 
-namespace KGSBrowseMVC.Controllers
+namespace Well.Controllers
 {
     public class HomeController : Controller
     {
@@ -43,11 +42,10 @@ namespace KGSBrowseMVC.Controllers
                 // Error conditions are finished with, so load the LAS file, thin the data to JSON form suitable for D3JS and C3JS
                 var path = Path.Combine(Server.MapPath("~/"), fileName);
                 file.SaveAs(path);
-                var inputWell = new Well(path);
-                inputWell.JsonHolder = inputWell.WellToJson(40,12);
-
+                var inputWell = (new LAS(path)).GetWell();
+                
                 // We believe everything is OK, so return the view for display
-                return View(new Model (inputWell.JsonHolder));
+                return View(new Model(inputWell.WellToJson(40, 12)));
             }
 
             catch (Exception ex)

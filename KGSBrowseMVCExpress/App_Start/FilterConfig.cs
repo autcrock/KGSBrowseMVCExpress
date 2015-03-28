@@ -1,7 +1,7 @@
 ﻿using System.Web;
 using System.Web.Mvc;
 
-namespace KGSBrowseMVCExpress
+namespace Well
 {
     public class FilterConfig
     {

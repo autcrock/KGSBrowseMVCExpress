@@ -11,7 +11,7 @@
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>KGSBrowseMVCExpress</RootNamespace>
+    <RootNamespace>Well</RootNamespace>
     <AssemblyName>KGSBrowseMVCExpress</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
@@ -112,6 +112,16 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\ILASHeaderQuadruple.cs" />
+    <Compile Include="Models\LAS.cs" />
+    <Compile Include="Models\ILASHeader.cs" />
+    <Compile Include="Models\ILASHeaderSegment.cs" />
+    <Compile Include="Models\LASHeaderSegment.cs" />
+    <Compile Include="Models\LASHeaderQuadruple.cs" />
+    <Compile Include="Models\LASHeader.cs" />
+    <Compile Include="Models\Logs.cs" />
+    <Compile Include="Models\WellHeader.cs" />
+    <Compile Include="Models\IMnemonic.cs" />
     <Compile Include="Models\Model.cs" />
     <Compile Include="Models\Well.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
