@@ -44,10 +44,9 @@ namespace Well.Models.WellDataModel
 
             // The segments of a LAS file are separated by a tilde.
             // Each type of segment has a label.
-            // Start at 1, not 0 index as the because first list segment is empty
-            var data = sr.ReadToEnd();
-            var segments = data.Split('~').ToList();
-            segments = segments.GetRange(1, segments.Count-1);
+            // Start at 1, not 0 index as the first list segment is empty
+            var segments = sr.ReadToEnd().Split('~').ToList().Skip(1);
+
             foreach (var segment in segments)
             {
                 // Preserve the header meta data as strings as the most likely way it will be useful.
@@ -55,8 +54,8 @@ namespace Well.Models.WellDataModel
                 {
                     case 'A':
                         // The ASCII log data.
-                        if (logCount > 0)
                         // Silently bypass if the compulsory log data segment is out of order.
+                        if (logCount > 0)
                         {
                             resultData = new LogData(logCount, segment);
                         }
@@ -66,6 +65,7 @@ namespace Well.Models.WellDataModel
                         // The Other segment - non-delimited text format - stored as a string.
                         // var logOHeaderSegment = new LogHeaderSegment(segment, true);
                         break;
+
                     case 'C':
                         // The Curve names, units, API code, description.
                         // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
@@ -73,6 +73,7 @@ namespace Well.Models.WellDataModel
                         headerSegments.Add(newCHeaderSegment);
                         logCount = newCHeaderSegment.Data.Count;
                         break;
+
                     default:
                         // The Version, Parameter and Well information blocks.
                         // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
@@ -175,11 +176,6 @@ namespace Well.Models.WellDataModel
             const int depthIndex = 0;
             // The depth log should always be the first column in a LAS file ASCII data section.
 
-            //                const string depthholder = "DEPT";
-            //                while (depthIndex < data.sampleCount && !(String.Equals(header.segments[curveInfoIndex].data[depthIndex].mnemonic.ToUpperInvariant(), depthholder)))
-            //                {
-            //                    depthIndex++;
-            //                }
             // Thin the data out, ensuring the thinning inputs are sensible
             if (Data.SampleCount < thin) thin = Data.SampleCount;
             int maxsamples = Data.SampleCount - Data.SampleCount % thin;
@@ -279,6 +275,7 @@ namespace Well.Models.WellDataModel
             // Remove the first line containing the ~ASCII identifier
             var index = inString.IndexOf(System.Environment.NewLine);
             var inString1 = inString.Substring(index + System.Environment.NewLine.Length).Trim();
+
             // Split into words and convert to raw log data
             var words = Regex.Split(inString1, @"\s+");
             LogCount = lC;
@@ -496,6 +493,7 @@ namespace Well.Models.WellDataModel
             Mnemonic = mnemonic;
         }
     }
+
     // For arranging Each well log with its own meta-data
     // Initially for easy conversion to JSON input to plotting libraries
     public class LinearDoubleLog : LogHeader
@@ -553,6 +551,7 @@ namespace Well.Models.WellDataModel
         {
             Mnemonic = mnemonic;
         }
+
         public string GetMnemonic()
         {
             return Mnemonic;
@@ -576,7 +575,7 @@ namespace Well.Models.WellDataModel
             set { _logCount = value; }
         }
 
-        public LinearDoubleWell ( LinearDoubleLog[] linearStringLogs)
+        public LinearDoubleWell(LinearDoubleLog[] linearStringLogs)
         {
             LinearStringLogs = linearStringLogs;
             LogCount = LinearStringLogs.LongCount();
