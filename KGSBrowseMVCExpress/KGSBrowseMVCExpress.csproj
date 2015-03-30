@@ -112,8 +112,15 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\WellDataModel.cs" />
-    <Compile Include="Models\Model.cs" />
+    <Compile Include="Models\Model\Model.cs" />
+    <Compile Include="Models\WellDataModel\LinearDoubleLog.cs" />
+    <Compile Include="Models\WellDataModel\LinearDoubleWell.cs" />
+    <Compile Include="Models\WellDataModel\LogDoubleDatum.cs" />
+    <Compile Include="Models\WellDataModel\LogHeader.cs" />
+    <Compile Include="Models\WellDataModel\LogHeaderSegment.cs" />
+    <Compile Include="Models\WellDataModel\LogStringDatum.cs" />
+    <Compile Include="Models\WellDataModel\WellDataModel.cs" />
+    <Compile Include="Models\WellDataModel\WellHeaderSegments.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

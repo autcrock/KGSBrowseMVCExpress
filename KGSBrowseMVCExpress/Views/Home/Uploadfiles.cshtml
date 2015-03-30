@@ -7,9 +7,7 @@
                 <h1>KGSBrowse LAS file well log data plotter.</h1>
             </hgroup>
 
-            <link href=@Url.Content("~/c3.css") rel="stylesheet" type="text/css">
             <script src=@Url.Content("~/d3.js") charset="utf-8" type="text/javascript"></script>
-            <script src=@Url.Content("~/c3.min.js") charset="utf-8" type="text/javascript"></script>
 
             A LAS file is sent to the server by the client browser, parsed and returned as JSON data and plotted by D3JS on the browser.
 
@@ -62,6 +60,12 @@
                     .y(function(d) { return d.y; })
                     .interpolate("linear");
 
+                //var mnemonicText = svg.append()
+                //    .x(function(d) { return d.x })
+                //    .y(function(d) { return d.y; })
+                //    .mnemonic(function(d) { return d.text })
+                //    .interpolate("linear");
+
                 var valueLine = d3.svg.line()
                     .x(function (d) { return x(d.x) })
                     .y(function (d) { return y(d.y) })
@@ -89,27 +93,36 @@
                 for (var i = 1; i< numberOfMnemonics; i++) {
                     var loopself = this;
                     var translationX = logLegendWidth * (i-1);
+//                    var mnemonicTranslationX = translationX + 3;
                     var legendTranslationDistanceString = ("translate(" 
                         + translationX.toString() 
                         + ", 0)");
+                    //var legendMnemonicTranslationDistanceString = ("translate(" 
+                    //    + mnemonicTranslationX.toString() 
+                    //    + "," 
+                    //    + (logLegendHeight-3).toString()
+                    //    + ")");
                     var logTranslationDistanceString = ("translate(" 
                         + translationX.toString() 
                         + "," 
                         + logLegendHeight.toString()
                         + ")");
+                    //var logLegendMnemonicData = [{"x": 0, "y": logLegendHeight - 3, "mnemonic": mnemonics[i]}];
                     svg.append("path")
                         .attr("d", box(logLegendBoxData))
                         .attr("stroke", "orange")
                         .attr("stroke-width", pathStrokeWidth)
                         .attr("fill", "none")
                         .attr("transform", legendTranslationDistanceString);
+                    //svg.append("text")
+                    //    .attr("d", mnemonicText(logLegendMnemonicData))
+                    //    .attr("transform", legendMnemonicTranslationDistanceString);
                     svg.append("path")
                         .attr("d", box(logBoxData))
                         .attr("stroke", "pink")
                         .attr("stroke-width", pathStrokeWidth)
                         .attr("fill", "none")
                         .attr("transform", logTranslationDistanceString);
-
                     var inputLogData = jsonInput[mnemonics[i]];
                     var x = d3.scale.linear().range([0, logWidth]).domain(d3.extent(inputLogData));
                     var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5);

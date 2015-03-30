@@ -2,7 +2,6 @@
 using System.IO;
 using System.Web;
 using System.Web.Mvc;
-using Well.Models.WellDataModel;
 using Well.Models.Model;
 
 namespace Well.Controllers
@@ -23,11 +22,12 @@ namespace Well.Controllers
 
                 // The file is zero length therefore not a LAS file by definition
                 var lasFileName = Path.GetFileName(file.FileName);
+
+                if (lasFileName == null) return View(new Model(" Upload error: Null file name received by the server."));
                 if (file.ContentLength == 0) return View(new Model (lasFileName + " Upload error: Empty file received by the server."));
 
                 var fileName = Path.GetFileName(file.FileName);
 
-                // Empty file name
                 if (string.IsNullOrWhiteSpace(fileName)) return View(new Model (lasFileName + " Upload error: The file name received by the server was null or white space."));
                 
                 // No .las file extension.  Could check the file by parsing it but that is beyond the scope of this story. 
@@ -44,13 +44,11 @@ namespace Well.Controllers
                 var path = Path.Combine(Server.MapPath("~/"), fileName);
                 file.SaveAs(path);
 
-                
-//                var inputWell = (new LAS(path)).GetWell();
-                using (var fs = System.IO.File.OpenRead(path.ToString()))
+                using (var fs = System.IO.File.OpenRead(path))
                 {
                     using (var sr = new StreamReader(fs))
                     {
-                        var inputWell = new Well.Models.WellDataModel.Well(sr);
+                        var inputWell = new Models.WellDataModel.Well(sr);
 
                         // We believe everything is OK, so return the view for display
                         return View(new Model(inputWell.WellToJson(40, 12)));
