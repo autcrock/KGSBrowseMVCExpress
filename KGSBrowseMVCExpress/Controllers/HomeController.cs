@@ -44,7 +44,7 @@ namespace KGSBrowseMVC.Controllers
                 var path = Path.Combine(Server.MapPath("~/"), fileName);
                 file.SaveAs(path);
                 var inputWell = new Well(path);
-                inputWell.JsonHolder = inputWell.WellToJson(40,12);
+                inputWell.JsonHolder = inputWell.WellToJson(40,1);
 
                 // We believe everything is OK, so return the view for display
                 return View(new Model (inputWell.JsonHolder));

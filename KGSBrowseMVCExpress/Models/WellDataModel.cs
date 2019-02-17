@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace KGSBrowseMVC.Models
@@ -106,7 +107,7 @@ namespace KGSBrowseMVC.Models
         // Do this rather than a serialisation library so we can choose to thin data for the display
         public string WellToJson(int maxlogs, int thin)
         {
-            string jsonString = "{" + Environment.NewLine;
+            var jsonString = new StringBuilder("{" + Environment.NewLine);
             int curveInfoIndex = 0;
             while (Header.Segments[curveInfoIndex].Name[0] != 'C')
             {
@@ -114,30 +115,30 @@ namespace KGSBrowseMVC.Models
             }
 
             // Thin the data out, ensuring the thinning inputs are sensible
-            if (Data.SampleCount < thin) thin = Data.SampleCount;
+            if (Data.SampleCount < thin * 2) thin = 1;
             if (maxlogs > Data.LogCount) maxlogs = Data.LogCount;
-            int maxsamples = Data.SampleCount - Data.SampleCount % thin;
+            int maxsamples = Data.SampleCount / thin;
             for (var i = 0; i < maxlogs; i++)
             {
-                jsonString += "\"" + Header.Segments[curveInfoIndex].Data[i].Mnemonic + "\": [";
+                jsonString.Append("\"" + Header.Segments[curveInfoIndex].Data[i].Mnemonic + "\": [");
                 for (var j = 0; j < maxsamples; j += thin)
                 {
                     if (j == maxsamples - thin)
                     {
-                        jsonString += Data.DoubleData[i][j];
+                        jsonString.Append(Data.DoubleData[i][j]);
                     }
                     else
                     {
-                        jsonString += Data.DoubleData[i][j] + ", ";
+                        jsonString.Append(Data.DoubleData[i][j] + ", ");
                     }
                 }
                 if (i == maxlogs - 1)
-                    jsonString += "]" + Environment.NewLine + Environment.NewLine;
+                    jsonString.Append("]" + Environment.NewLine + Environment.NewLine);
                 else
-                    jsonString += "]," + Environment.NewLine + Environment.NewLine;
+                    jsonString.Append("]," + Environment.NewLine + Environment.NewLine);
             }
-            jsonString += "}" + Environment.NewLine;
-            return jsonString;
+            jsonString.Append("}" + Environment.NewLine);
+            return jsonString.ToString();
         }
 
         public string GetDepths(int thin)
@@ -160,20 +161,20 @@ namespace KGSBrowseMVC.Models
             if (Data.SampleCount < thin) thin = Data.SampleCount;
             int maxsamples = Data.SampleCount - Data.SampleCount % thin;
 
-            var depthString = "\"" + Header.Segments[curveInfoIndex].Data[depthIndex].Mnemonic + "\": [";
+            var depthString = new StringBuilder("\"" + Header.Segments[curveInfoIndex].Data[depthIndex].Mnemonic + "\": [");
             for (var j = 0; j < maxsamples; j += thin)
             {
                 if (j == maxsamples - thin)
                 {
-                    depthString += Data.DoubleData[depthIndex][j];
+                    depthString.Append(Data.DoubleData[depthIndex][j]);
                 }
                 else
                 {
-                    depthString += Data.DoubleData[depthIndex][j] + ", ";
+                    depthString.Append(Data.DoubleData[depthIndex][j] + ", ");
                 }
             }
-            depthString += "]" + Environment.NewLine;
-            return depthString;
+            depthString.Append("]" + Environment.NewLine);
+            return depthString.ToString();
         }
     }
 
