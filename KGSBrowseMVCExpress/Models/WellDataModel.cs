@@ -53,52 +53,53 @@ namespace KGSBrowseMVC.Models
             var resultData = new LogData();
             var logCount = 0;
 
-            var fs = File.OpenRead(filename);
-            var sr = new StreamReader(fs);
-
-            // The segments of a LAS file are separated by a tilde.
-            // Each type of segment has a label.
-            var data = sr.ReadToEnd();
-            var segments = data.Split('~');
-
-            for (var i = 1; i < segments.Length; i++)
+            using (var fs = File.OpenRead(filename))
             {
-                // Preserve the header meta data as strings as the most likely way it will be useful.
-                LogHeaderSegment segment;
-                switch (segments[i][0])
+                using (var sr = new StreamReader(fs))
                 {
-                    case 'A':
-                        // The ASCII log data.
-                        if (logCount > 0)
-                            // Silently bypass if the compulsory log data segment is out of order.
-                        {
-                            resultData = new LogData(logCount, segments[i]);
-                        }
-                        break;
 
-                    case 'O':
-                        // The Other segment - non-delimited text format - stored as a string.
-                        segment = new LogHeaderSegment(segments[i], true);
-                        break;
-                    case 'C':
-                        // The Curve names, units, API code, description.
-                        // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                        segment = new LogHeaderSegment(segments[i], false);
-                        headerSegments.Add(segment);
-                        logCount = segment.Data.Count;
-                        break;
-                    default:
-                        // The Version, Parameter and Well information blocks.
-                        // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                        segment = new LogHeaderSegment(segments[i], false);
-                        headerSegments.Add(segment);
-                        break;
+                    // The segments of a LAS file are separated by a tilde.
+                    // Each type of segment has a label.
+                    var data = sr.ReadToEnd();
+                    var segments = data.Split('~');
+
+                    for (var i = 1; i < segments.Length; i++)
+                    {
+                        // Preserve the header meta data as strings as the most likely way it will be useful.
+                        LogHeaderSegment segment;
+                        switch (segments[i][0])
+                        {
+                            case 'A':
+                                // The ASCII log data.
+                                if (logCount > 0)
+                                // Silently bypass if the compulsory log data segment is out of order.
+                                {
+                                    resultData = new LogData(logCount, segments[i]);
+                                }
+                                break;
+
+                            case 'O':
+                                // The Other segment - non-delimited text format - stored as a string.
+                                segment = new LogHeaderSegment(segments[i], true);
+                                break;
+                            case 'C':
+                                // The Curve names, units, API code, description.
+                                // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
+                                segment = new LogHeaderSegment(segments[i], false);
+                                headerSegments.Add(segment);
+                                logCount = segment.Data.Count;
+                                break;
+                            default:
+                                // The Version, Parameter and Well information blocks.
+                                // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
+                                segment = new LogHeaderSegment(segments[i], false);
+                                headerSegments.Add(segment);
+                                break;
+                        }
+                    }
+                    resultHeader.Segments = headerSegments;
                 }
             }
-            resultHeader.Segments = headerSegments;
-            sr.Close();
-            fs.Close();
-
             Header = resultHeader;
             Data = resultData;
             JsonHolder = "";
