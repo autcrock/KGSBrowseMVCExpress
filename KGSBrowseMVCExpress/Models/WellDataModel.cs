@@ -66,7 +66,7 @@ namespace KGSBrowseMVC.Models
                     for (var i = 1; i < segments.Length; i++)
                     {
                         // Preserve the header meta data as strings as the most likely way it will be useful.
-                        LogHeaderSegment segment;
+                        LogHeaderSegment logHeaderSegment;
                         switch (segments[i][0])
                         {
                             case 'A':
@@ -80,20 +80,20 @@ namespace KGSBrowseMVC.Models
 
                             case 'O':
                                 // The Other segment - non-delimited text format - stored as a string.
-                                segment = new LogHeaderSegment(segments[i], true);
+                                logHeaderSegment = new LogHeaderSegment(segments[i], true);
                                 break;
                             case 'C':
                                 // The Curve names, units, API code, description.
                                 // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                                segment = new LogHeaderSegment(segments[i], false);
-                                headerSegments.Add(segment);
-                                logCount = segment.Data.Count;
+                                logHeaderSegment = new LogHeaderSegment(segments[i], false);
+                                headerSegments.Add(logHeaderSegment);
+                                logCount = logHeaderSegment.Data.Count;
                                 break;
                             default:
                                 // The Version, Parameter and Well information blocks.
                                 // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                                segment = new LogHeaderSegment(segments[i], false);
-                                headerSegments.Add(segment);
+                                logHeaderSegment = new LogHeaderSegment(segments[i], false);
+                                headerSegments.Add(logHeaderSegment);
                                 break;
                         }
                     }
