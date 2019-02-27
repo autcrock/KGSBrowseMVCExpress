@@ -48,9 +48,6 @@ namespace KGSBrowseMVC.Models
         public Well(string filename)
         {
             var headerSegments = new List<LogHeaderSegment>();
-            var resultHeader = new LogHeader();
-            var stringData = new List<LogStringDatum>();
-            var resultData = new LogData();
             var logCount = 0;
 
             using (var fs = File.OpenRead(filename))
@@ -63,45 +60,46 @@ namespace KGSBrowseMVC.Models
                     var data = sr.ReadToEnd();
                     var segments = data.Split('~');
 
-                    for (var i = 1; i < segments.Length; i++)
+                    foreach (var segment in segments)
                     {
                         // Preserve the header meta data as strings as the most likely way it will be useful.
                         LogHeaderSegment logHeaderSegment;
-                        switch (segments[i][0])
+                        if (segment.Length != 0)
                         {
-                            case 'A':
-                                // The ASCII log data.
-                                if (logCount > 0)
-                                // Silently bypass if the compulsory log data segment is out of order.
-                                {
-                                    resultData = new LogData(logCount, segments[i]);
-                                }
-                                break;
+                            switch (segment[0])
+                            {
+                                case 'A':
+                                    // The ASCII log data.
+                                    if (logCount > 0)
+                                    // Silently bypass if the compulsory log data segment is out of order.
+                                    {
+                                        Data = new LogData(logCount, segment);
+                                    }
+                                    break;
 
-                            case 'O':
-                                // The Other segment - non-delimited text format - stored as a string.
-                                logHeaderSegment = new LogHeaderSegment(segments[i], true);
-                                break;
-                            case 'C':
-                                // The Curve names, units, API code, description.
-                                // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                                logHeaderSegment = new LogHeaderSegment(segments[i], false);
-                                headerSegments.Add(logHeaderSegment);
-                                logCount = logHeaderSegment.Data.Count;
-                                break;
-                            default:
-                                // The Version, Parameter and Well information blocks.
-                                // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                                logHeaderSegment = new LogHeaderSegment(segments[i], false);
-                                headerSegments.Add(logHeaderSegment);
-                                break;
+                                case 'O':
+                                    // The Other segment - non-delimited text format - stored as a string.
+                                    logHeaderSegment = new LogHeaderSegment(segment, true);
+                                    break;
+                                case 'C':
+                                    // The Curve names, units, API code, description.
+                                    // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
+                                    logHeaderSegment = new LogHeaderSegment(segment, false);
+                                    headerSegments.Add(logHeaderSegment);
+                                    logCount = logHeaderSegment.Data.Count;
+                                    break;
+                                default:
+                                    // The Version, Parameter and Well information blocks.
+                                    // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
+                                    logHeaderSegment = new LogHeaderSegment(segment, false);
+                                    headerSegments.Add(logHeaderSegment);
+                                    break;
+                            }
                         }
                     }
-                    resultHeader.Segments = headerSegments;
+                    Header = new LogHeader(headerSegments);
                 }
             }
-            Header = resultHeader;
-            Data = resultData;
             JsonHolder = "";
         }
 
