@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace KGSBrowseMVC.Models
 {
@@ -47,8 +48,8 @@ namespace KGSBrowseMVC.Models
 
         public Well(string filename)
         {
-            var headerSegments = new List<LogHeaderSegment>();
-            var logCount = 0;
+//            var headerSegments = new List<LogHeaderSegment>();
+//            var logCount = 0;
 
             using (var fs = File.OpenRead(filename))
             {
@@ -58,46 +59,24 @@ namespace KGSBrowseMVC.Models
                     // The segments of a LAS file are separated by a tilde.
                     // Each type of segment has a label.
                     var data = sr.ReadToEnd();
-                    var segments = data.Split('~');
+                    List<String> segments = new List<String> (data.Split('~').Where(seg => !String.IsNullOrEmpty(seg)));
 
-                    foreach (var segment in segments)
-                    {
-                        // Preserve the header meta data as strings as the most likely way it will be useful.
-                        LogHeaderSegment logHeaderSegment;
-                        if (segment.Length != 0)
-                        {
-                            switch (segment[0])
-                            {
-                                case 'A':
-                                    // The ASCII log data.
-                                    if (logCount > 0)
-                                    // Silently bypass if the compulsory log data segment is out of order.
-                                    {
-                                        Data = new LogData(logCount, segment);
-                                    }
-                                    break;
+                    var headerSegments = new List<LogHeaderSegment>();
+                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'O').Single(), true));
+                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'V').Single(), false));
+                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'P').Single(), false));
+                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'W').Single(), false));
 
-                                case 'O':
-                                    // The Other segment - non-delimited text format - stored as a string.
-                                    logHeaderSegment = new LogHeaderSegment(segment, true);
-                                    break;
-                                case 'C':
-                                    // The Curve names, units, API code, description.
-                                    // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                                    logHeaderSegment = new LogHeaderSegment(segment, false);
-                                    headerSegments.Add(logHeaderSegment);
-                                    logCount = logHeaderSegment.Data.Count;
-                                    break;
-                                default:
-                                    // The Version, Parameter and Well information blocks.
-                                    // Delimited by '.' and ':' and parsed as one LogDataQuadruple per line
-                                    logHeaderSegment = new LogHeaderSegment(segment, false);
-                                    headerSegments.Add(logHeaderSegment);
-                                    break;
-                            }
-                        }
-                    }
+                    var curveHeaderSegment = new LogHeaderSegment(segments.Where(segment => segment[0] == 'C').Single(), false);
+                    headerSegments.Add(curveHeaderSegment);
+
+                    Data = new LogData(
+                          curveHeaderSegment.Data.Count
+                        , segments.Where(segment => segment[0] == 'A').Single()
+                        );
+
                     Header = new LogHeader(headerSegments);
+
                 }
             }
             JsonHolder = "";
@@ -151,12 +130,6 @@ namespace KGSBrowseMVC.Models
             const int depthIndex = 0;
             // The depth log should always be the first column in a LAS file ASCII data section.
 
-            //                const string depthholder = "DEPT";
-            //                while (depthIndex < data.sampleCount && !(String.Equals(header.segments[curveInfoIndex].data[depthIndex].mnemonic.ToUpperInvariant(), depthholder)))
-            //                {
-            //                    depthIndex++;
-            //                }
-            // Thin the data out, ensuring the thinning inputs are sensible
             if (Data.SampleCount < thin) thin = Data.SampleCount;
             int maxsamples = Data.SampleCount - Data.SampleCount % thin;
 
@@ -302,10 +275,14 @@ namespace KGSBrowseMVC.Models
             Data = new List<LogHeaderQuadruple>();
             OtherInformation = String.Empty;
 
+
             if ( String.IsNullOrEmpty(inString) )
             {
-                return;
+                throw new Exception("LogHeaderSegment: No Input string.");
             }
+
+            string[] lines = Regex.Split(inString, "\r\n|\r|\n");
+            Name = lines[0];
 
             if (other)
             {
@@ -313,8 +290,6 @@ namespace KGSBrowseMVC.Models
                 return;
             }
 
-            string[] lines = Regex.Split(inString, "\r\n|\r|\n");
-            Name = lines[0];
             for (var i = 1; i < lines.Length; i++)
             {
                 var line = lines[i];
