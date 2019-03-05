@@ -86,34 +86,29 @@ namespace KGSBrowseMVC.Models
         public string WellToJson(int maxlogs, int thin)
         {
             var jsonString = new StringBuilder("{" + Environment.NewLine);
-            int curveInfoIndex = 0;
-            while (Header.Segments[curveInfoIndex].Name[0] != 'C')
-            {
-                curveInfoIndex++;
-            }
+            var curveData = Header.Segments.ToList().Where(s => s.Name[0] == 'C').Single().Data;
 
-            // Thin the data out, ensuring the thinning inputs are sensible
-            if (Data.SampleCount < thin * 2) thin = 1;
-            if (maxlogs > Data.LogCount) maxlogs = Data.LogCount;
-            int maxsamples = Data.SampleCount / thin;
-            for (var i = 0; i < maxlogs; i++)
+            var i = 0;
+            foreach (var curve in Data.DoubleData)
             {
-                jsonString.Append("\"" + Header.Segments[curveInfoIndex].Data[i].Mnemonic + "\": [");
-                for (var j = 0; j < maxsamples; j += thin)
-                {
-                    if (j == maxsamples - thin)
+                jsonString.Append("\"" + curveData[i].Mnemonic + "\": [");
+                var j = 0;
+                foreach (var datum in Data.DoubleData[i]) { 
+                    if (j == Data.SampleCount)
                     {
-                        jsonString.Append(Data.DoubleData[i][j]);
+                        jsonString.Append(datum);
                     }
                     else
                     {
-                        jsonString.Append(Data.DoubleData[i][j] + ", ");
+                        jsonString.Append(datum + ", ");
                     }
+                    j++;
                 }
-                if (i == maxlogs - 1)
+                if (i == Data.LogCount)
                     jsonString.Append("]" + Environment.NewLine + Environment.NewLine);
                 else
                     jsonString.Append("]," + Environment.NewLine + Environment.NewLine);
+                i++;
             }
             jsonString.Append("}" + Environment.NewLine);
             return jsonString.ToString();
