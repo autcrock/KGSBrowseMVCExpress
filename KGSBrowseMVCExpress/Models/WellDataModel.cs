@@ -83,7 +83,7 @@ namespace KGSBrowseMVC.Models
         }
 
         // Do this rather than a serialisation library so we can choose to thin data for the display
-        public string WellToJson(int maxlogs, int thin)
+        public string WellToJson()
         {
             var jsonString = new StringBuilder("{" + Environment.NewLine);
             var curveData = Header.Segments.ToList().Where(s => s.Name[0] == 'C').Single().Data;
