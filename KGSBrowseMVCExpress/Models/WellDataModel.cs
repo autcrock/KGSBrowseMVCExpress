@@ -93,52 +93,31 @@ namespace KGSBrowseMVC.Models
             {
                 jsonString.Append("\"" + curveData[i].Mnemonic + "\": [");
                 var j = 0;
-                foreach (var datum in Data.DoubleData[i]) { 
-                    if (j == Data.SampleCount)
-                    {
-                        jsonString.Append(datum);
-                    }
-                    else
-                    {
-                        jsonString.Append(datum + ", ");
-                    }
-                    j++;
+                foreach (var datum in Data.DoubleData[i]) {
+                    jsonString.Append(datum);
+                    if (j++ != Data.SampleCount) jsonString.Append(", ");
                 }
-                if (i == Data.LogCount)
+                if (i++ == Data.LogCount)
                     jsonString.Append("]" + Environment.NewLine + Environment.NewLine);
                 else
                     jsonString.Append("]," + Environment.NewLine + Environment.NewLine);
-                i++;
             }
             jsonString.Append("}" + Environment.NewLine);
             return jsonString.ToString();
         }
 
-        public string GetDepths(int thin)
+        public string GetDepths()
         {
-            var curveInfoIndex = 0;
-            while (curveInfoIndex < Data.LogCount && (Header.Segments[curveInfoIndex].Name[0] != 'C'))
-            {
-                curveInfoIndex++;
-            }
-
+            var curveData = Header.Segments.ToList().Where(s => s.Name[0] == 'C').Single().Data;
             const int depthIndex = 0;
             // The depth log should always be the first column in a LAS file ASCII data section.
 
-            if (Data.SampleCount < thin) thin = Data.SampleCount;
-            int maxsamples = Data.SampleCount - Data.SampleCount % thin;
-
-            var depthString = new StringBuilder("\"" + Header.Segments[curveInfoIndex].Data[depthIndex].Mnemonic + "\": [");
-            for (var j = 0; j < maxsamples; j += thin)
+            var depthString = new StringBuilder("\"" + curveData[depthIndex].Mnemonic + "\": [");
+            var j = 0;
+            foreach (var doubleDatum in Data.DoubleData)
             {
-                if (j == maxsamples - thin)
-                {
-                    depthString.Append(Data.DoubleData[depthIndex][j]);
-                }
-                else
-                {
-                    depthString.Append(Data.DoubleData[depthIndex][j] + ", ");
-                }
+                depthString.Append(doubleDatum[j]);
+                if (j++ != Data.SampleCount) depthString.Append(", ");
             }
             depthString.Append("]" + Environment.NewLine);
             return depthString.ToString();
