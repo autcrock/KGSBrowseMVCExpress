@@ -4,8 +4,6 @@ using System.Web;
 using System.Web.Mvc;
 using KGSBrowse.Models;
 
-//using Microsoft.Ajax.Utilities;
-
 namespace KGSBrowse.Controllers
 {
     public class HomeController : Controller

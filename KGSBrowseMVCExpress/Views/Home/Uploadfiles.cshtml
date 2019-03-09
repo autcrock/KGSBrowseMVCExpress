@@ -1,19 +1,29 @@
 ﻿@model KGSBrowse.Models.Model
 
-<div id="body">
-    <section class="featured">
-        <div class="content-wrapper">
-            <hgroup class="title">
-                <h1>KGSBrowse LAS file well log data plotter.</h1>
-            </hgroup>
+<html lang="en">
+<head>
+    <title>Bootstrap Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</head>
+<body>
 
-            <link href=@Url.Content("~/c3.css") rel="stylesheet" type="text/css">
-            <script src=@Url.Content("~/d3.js") charset="utf-8" type="text/javascript"></script>
-            <script src=@Url.Content("~/c3.min.js") charset="utf-8" type="text/javascript"></script>
+    <div class="container">
+        <div id="body">
+            <section class="featured">
+                <div class="content-wrapper">
+                    <hgroup class="title">
+                        <h1>KGSBrowse LAS file well log data plotter.</h1>
+                    </hgroup>
 
-            A LAS file is sent to the server by the client browser, parsed and returned as JSON data and plotted by D3JS on the browser.
+                    <script src=@Url.Content("~/d3.js") charset="utf-8" type="text/javascript"></script>
 
-            <script>
+                    A LAS file is sent to the server by the client browser, parsed and returned as JSON data and plotted by D3JS on the browser.
+
+                    <script>
                 var self = this;
 
                 var jsonInput = @Html.Raw(Model.ReturnedValue);
@@ -38,24 +48,30 @@
                 var depthData = jsonInput[mnemonics[0]];
                 var y = d3.scale.linear().range([0, logHeight]).domain(d3.extent(depthData));
                 var yAxis = d3.svg.axis().scale(y).orient("left").ticks(5);
-                
-                var wellBoxData = [ {"x": 0,"y": 0},
-                    {"x": wellWidth,"y": 0},
-                    {"x": wellWidth,"y": wellHeight},
-                    {"x": 0,"y": wellHeight},
-                    {"x": 0,"y": 0}];
 
-                var logLegendBoxData = [ {"x": 0,"y": 0},
-                    {"x": logLegendWidth,"y": 0},
-                    {"x": logLegendWidth,"y": logLegendHeight},
-                    {"x": 0,"y": logLegendHeight},
-                    {"x": 0,"y": 0}];
+                var wellBoxData = [
+                    { "x": 0, "y": 0 },
+                    { "x": wellWidth, "y": 0 },
+                    { "x": wellWidth, "y": wellHeight },
+                    { "x": 0, "y": wellHeight },
+                    { "x": 0, "y": 0 }
+                ];
 
-                var logBoxData = [ {"x": 0,"y": 0},
-                    {"x": logWidth,"y": 0},
-                    {"x": logWidth,"y": logHeight},
-                    {"x": 0,"y": logHeight},
-                    {"x": 0,"y": 0}];
+                var logLegendBoxData = [
+                    { "x": 0, "y": 0 },
+                    { "x": logLegendWidth, "y": 0 },
+                    { "x": logLegendWidth, "y": logLegendHeight },
+                    { "x": 0, "y": logLegendHeight },
+                    { "x": 0, "y": 0 }
+                ];
+
+                var logBoxData = [
+                    { "x": 0, "y": 0 },
+                    { "x": logWidth, "y": 0 },
+                    { "x": logWidth, "y": logHeight },
+                    { "x": 0, "y": logHeight },
+                    { "x": 0, "y": 0 }
+                ];
 
                 var box = d3.svg.line()
                     .x(function(d) { return d.x })
@@ -63,8 +79,8 @@
                     .interpolate("linear");
 
                 var valueLine = d3.svg.line()
-                    .x(function (d) { return x(d.x) })
-                    .y(function (d) { return y(d.y) })
+                    .x(function(d) { return x(d.x) })
+                    .y(function(d) { return y(d.y) })
                     .interpolate("linear");
 
                 var frameIndex = 0;
@@ -75,7 +91,7 @@
                     //should arrayID length equal arrayText length and both against null
                     if (arrayID != null && arrayText != null && arrayID.length == arrayText.length) {
                         for (var i = 0; i < arrayID.length; i++) {
-                            if ( i < arrayID.length - 1) {
+                            if (i < arrayID.length - 1) {
                                 newLogData += '{ "x" : ' + arrayText[i] + ', "y" : ' + arrayID[i] + ' }, ';
                             } else {
                                 newLogData += '{ "x" : ' + arrayText[i] + ', "y" : ' + arrayID[i] + ' } ';
@@ -86,17 +102,12 @@
                     return JSON.parse(newLogData);
                 }
 
-                for (var i = 1; i< numberOfMnemonics; i++) {
+                for (var i = 1; i < numberOfMnemonics; i++) {
                     var loopself = this;
-                    var translationX = logLegendWidth * (i-1);
-                    var legendTranslationDistanceString = ("translate(" 
-                        + translationX.toString() 
-                        + ", 0)");
-                    var logTranslationDistanceString = ("translate(" 
-                        + translationX.toString() 
-                        + "," 
-                        + logLegendHeight.toString()
-                        + ")");
+                    var translationX = logLegendWidth * (i - 1);
+                    var legendTranslationDistanceString = ("translate(" + translationX.toString() + ", 0)");
+                    var logTranslationDistanceString =
+                        ("translate(" + translationX.toString() + "," + logLegendHeight.toString() + ")");
                     svg.append("path")
                         .attr("d", box(logLegendBoxData))
                         .attr("stroke", "gray")
@@ -121,7 +132,7 @@
                     var inputLogData = jsonInput[mnemonics[i]];
                     var x = d3.scale.linear().range([0, logWidth]).domain(d3.extent(inputLogData));
                     var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(5);
-                    var logData = getLogData ( depthData, inputLogData );
+                    var logData = getLogData(depthData, inputLogData);
 
                     svg.append("path")
                         .attr("d", valueLine(logData))
@@ -147,7 +158,11 @@
                 //    .attr("stroke-width", pathStrokeWidth)
                 //    .attr("transform", logTranslationDistanceString)
                 //    .call(xAxis);
-            </script>
+                    </script>
+                </div>
+            </section>
         </div>
-    </section>
-</div>
+    </div>
+
+</body>
+</html>
