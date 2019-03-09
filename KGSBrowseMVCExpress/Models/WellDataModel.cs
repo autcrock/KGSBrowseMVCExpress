@@ -4,8 +4,9 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
+using static System.String;
 
-namespace KGSBrowseMVC.Models
+namespace KGSBrowse.Models
 {
     public class Model
     {
@@ -59,20 +60,20 @@ namespace KGSBrowseMVC.Models
                     // The segments of a LAS file are separated by a tilde.
                     // Each type of segment has a label.
                     var data = sr.ReadToEnd();
-                    List<String> segments = new List<String> (data.Split('~').Where(seg => !String.IsNullOrEmpty(seg)));
+                    List<String> segments = new List<String> (data.Split('~').Where(seg => !IsNullOrEmpty(seg)));
 
                     var headerSegments = new List<LogHeaderSegment>();
-                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'O').Single(), true));
-                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'V').Single(), false));
-                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'P').Single(), false));
-                    headerSegments.Add(new LogHeaderSegment(segments.Where(segment => segment[0] == 'W').Single(), false));
+                    headerSegments.Add(new LogHeaderSegment(segments.Single(segment => segment[0] == 'O'), true));
+                    headerSegments.Add(new LogHeaderSegment(segments.Single(segment => segment[0] == 'V'), false));
+                    headerSegments.Add(new LogHeaderSegment(segments.Single(segment => segment[0] == 'P'), false));
+                    headerSegments.Add(new LogHeaderSegment(segments.Single(segment => segment[0] == 'W'), false));
 
-                    var curveHeaderSegment = new LogHeaderSegment(segments.Where(segment => segment[0] == 'C').Single(), false);
+                    var curveHeaderSegment = new LogHeaderSegment(segments.Single(segment => segment[0] == 'C'), false);
                     headerSegments.Add(curveHeaderSegment);
 
                     Data = new LogData(
                           curveHeaderSegment.Data.Count
-                        , segments.Where(segment => segment[0] == 'A').Single()
+                        , segments.Single(segment => segment[0] == 'A')
                         );
 
                     Header = new LogHeader(headerSegments);
@@ -108,7 +109,7 @@ namespace KGSBrowseMVC.Models
 
         public string GetDepths()
         {
-            var curveData = Header.Segments.ToList().Where(s => s.Name[0] == 'C').Single().Data;
+            var curveData = Header.Segments.ToList().Single(s => s.Name[0] == 'C').Data;
             const int depthIndex = 0;
             // The depth log should always be the first column in a LAS file ASCII data section.
 
@@ -165,9 +166,7 @@ namespace KGSBrowseMVC.Models
         }
         public LogData(int lC, string inString)
         {
-            int wordCount = 0;
-
-            if (String.IsNullOrEmpty(inString) )
+            if (IsNullOrEmpty(inString) )
             {
                 LogCount = 0;
                 SampleCount = 0;
@@ -177,23 +176,23 @@ namespace KGSBrowseMVC.Models
             }
 
             // Remove the first line containing the ~ASCII identifier
-            var index = inString.IndexOf(System.Environment.NewLine);
-            var inString1 = inString.Substring(index + System.Environment.NewLine.Length).Trim();
+            var index = inString.IndexOf(Environment.NewLine);
+            var inString1 = inString.Substring(index + Environment.NewLine.Length).Trim();
             // Split into words and convert to raw log data
             var words = Regex.Split(inString1, @"\s+");
             LogCount = lC;
-            wordCount = (int)words.Length;
-            SampleCount = wordCount / LogCount;
+
+            SampleCount = words.Length / LogCount;
             StringData = null;
             DoubleData = new double[LogCount][];
             for (var logIndex = 0; logIndex < LogCount; logIndex++)
             {
                 DoubleData[logIndex] = new double[SampleCount];
-                for (var wordIndex = 0; wordIndex < wordCount; wordIndex += LogCount)
+                for (var wordIndex = 0; wordIndex < words.Length; wordIndex += LogCount)
                 {
                     var sampleIndex = wordIndex / LogCount;
                     var word = words[wordIndex + logIndex];
-                    if (!string.IsNullOrEmpty(word))
+                    if (!IsNullOrEmpty(word))
                     {
                         DoubleData[logIndex][sampleIndex] = Convert.ToDouble(word);
                     }
@@ -217,8 +216,8 @@ namespace KGSBrowseMVC.Models
             var spaceSplit = colonSplit[0].Split(new char[] { ' ' }, 2);
             var firstField = dotSplit[0].Trim();
             var secondField = spaceSplit[0].Trim();
-            var thirdField = String.Empty;
-            var fourthField = String.Empty;
+            var thirdField = Empty;
+            var fourthField = Empty;
             if (spaceSplit.Length > 1) thirdField = spaceSplit[1].Trim();
             if (colonSplit.Length > 1) fourthField = colonSplit[1].Trim();
 
@@ -238,19 +237,19 @@ namespace KGSBrowseMVC.Models
 
         public LogHeaderSegment()
         {
-            Name = String.Empty;
+            Name = Empty;
             Data = new List<LogHeaderQuadruple>();
-            OtherInformation = String.Empty;
+            OtherInformation = Empty;
         }
 
         public LogHeaderSegment(string inString, Boolean other)
         {
-            Name = String.Empty;
+            Name = Empty;
             Data = new List<LogHeaderQuadruple>();
-            OtherInformation = String.Empty;
+            OtherInformation = Empty;
 
 
-            if ( String.IsNullOrEmpty(inString) )
+            if ( IsNullOrEmpty(inString) )
             {
                 throw new Exception("LogHeaderSegment: No Input string.");
             }
@@ -268,7 +267,7 @@ namespace KGSBrowseMVC.Models
             {
                 var line = lines[i];
 
-                if (!string.IsNullOrEmpty(line) && (line[0] != '#'))
+                if (!IsNullOrEmpty(line) && (line[0] != '#'))
                 {
                     Data.Add(new LogHeaderQuadruple(line));
                 }
