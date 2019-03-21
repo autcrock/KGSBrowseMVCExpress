@@ -2,4 +2,6 @@
 bin
 obj
 *.user
-
+KGSBrowseMVCExpress/bower_components
+KGSBrowseMVCExpress/node_modules
+KGSBrowseMVCExpress/package-lock.json
